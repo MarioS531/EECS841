@@ -1,7 +1,13 @@
 import os
-import cv2
+import cv2 # sudo apt install python3-opencv for reading images
 import numpy as np
-from skimage.feature import hog
+from skimage.feature import hog # run sudo apt install python3-skimage to install scikit-image library for HoG feature extraction
+
+# sudo apt install python3-sklearn
+from sklearn.svm import SVC # import the SVM classifier
+from sklearn.model_selection import train_test_split # to split the data into training and testing sets
+from sklearn.metrics import accuracy_score, precision_score, f1_score
+from sklearn.model_selection import GridSearchCV
 
 #load all images from dataset folder and assign labels based on filename
 def load_dataset(dataset_path):
@@ -23,7 +29,6 @@ def load_dataset(dataset_path):
         labels.append(label)
     return np.array(images), np.array(labels)
 
-
 #System A feature extraction (HoG)
 def extract_hog_features(images):
     features = []
@@ -38,7 +43,105 @@ def extract_hog_features(images):
         features.append(hog_feature)
     return np.array(features)
 
+def evaluation(actual, pred):
+    # find accuracy, precision, and f1 scores for the actual vs predicted sets
+    accuracy = accuracy_score(actual, pred)
+    precision = precision_score(actual, pred)
+    f1 = f1_score(actual, pred)
+    return accuracy, precision, f1
+
+def tune_params(X, y):
+    # parameter tuning using grid search 
+    param_grid = {
+        'C': [0.1, 1, 10, 100],
+        'kernel': ['linear', 'rbf'],
+        'gamma': ['scale', 'auto', 0.01, 0.001]
+    }
+
+    grid = GridSearchCV(
+        SVC(),
+        param_grid,
+        cv=5, # 5 fold cross validation
+        scoring='accuracy', # tuning based on best accuracy
+        n_jobs=-1 # use all available cores
+    )
+
+    grid.fit(X, y)
+
+    print("Best parameters:", grid.best_params_)
+    print("Best accuracy:", grid.best_score_)
+
+    return grid.best_estimator_ #return best model
+
+def SystemA_classifier(hog_features, labels):
+    # train and evaluate SVM as system A
+    # train (80%), test (20%) split
+    X_train, X_test, y_train, y_test = train_test_split(hog_features, labels, test_size=0.2)
+
+    # define and train SVM model
+    model = SVC()
+    model.fit(X_train, y_train)
+
+    y_train_pred = model.predict(X_train)
+    y_pred = model.predict(X_test)
+
+    # evaluation metrics: accuracy, precision, f1-score for both training and testing sets (baseline)
+    train_accuracy, train_prec, train_f1 = evaluation(y_train, y_train_pred)
+    test_accuracy, test_prec, test_f1 = evaluation(y_test, y_pred)
+    print("System A baseline evaluation: ")
+    print("Training Accuracy:", train_accuracy)
+    print("Testing Accuracy:", test_accuracy)
+    print("Training Precision:", train_prec)
+    print("Testing Precision:", test_prec)
+    print("Training F1-Score:", train_f1)
+    print("Testing F1-Score:", test_f1)
+
+    # train new best model
+    model = tune_params(X_train, y_train)
+
+    y_train_pred = model.predict(X_train)
+    y_pred = model.predict(X_test)
+
+    # evaluation metrics: accuracy, precision, f1-score for both training and testing sets (tuned)
+    train_accuracy, train_prec, train_f1 = evaluation(y_train, y_train_pred)
+    test_accuracy, test_prec, test_f1 = evaluation(y_test, y_pred)
+    print("System A tuned evaluation: ")
+    print("Training Accuracy:", train_accuracy)
+    print("Testing Accuracy:", test_accuracy)
+    print("Training Precision:", train_prec)
+    print("Testing Precision:", test_prec)
+    print("Training F1-Score:", train_f1)
+    print("Testing F1-Score:", test_f1)
+
 dataset_path = "dataset"
 images, labels = load_dataset(dataset_path)
 hog_features = extract_hog_features(images)
 print("HoG feature shape:", hog_features.shape)
+
+SystemA_classifier(hog_features, labels)
+
+'''
+System A results/discussion:
+HoG feature shape: (3000, 900)
+System A baseline evaluation: 
+Training Accuracy: 0.9454166666666667
+Testing Accuracy: 0.825
+Training Precision: 0.9464579901153213
+Testing Precision: 0.8082191780821918
+Training F1-Score: 0.946068340881021
+Testing F1-Score: 0.8180242634315424
+Best parameters: {'C': 1, 'gamma': 'scale', 'kernel': 'rbf'}
+Best accuracy: 0.7787499999999999 (based on CV)
+System A tuned evaluation: 
+Training Accuracy: 0.9454166666666667
+Testing Accuracy: 0.825
+Training Precision: 0.9464579901153213
+Testing Precision: 0.8082191780821918
+Training F1-Score: 0.946068340881021
+Testing F1-Score: 0.8180242634315424
+
+Tuning did not improve performance. Performance is already high, which may show that 
+HoG does a good job at separating classes already so tuning the classifier is not needed.
+
+The small gap between training and testing accuracy indicates mild overfitting.
+'''
