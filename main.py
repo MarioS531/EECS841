@@ -146,7 +146,7 @@ SystemA_classifier(hog_features, labels)
 
 resnet_features = extract_ResNet_features(images) # placeholder for system B feature extraction
 print("ResNet feature shape:", resnet_features.shape)
-#SystemB_classifier(deep_model_features, labels) # placeholder for system B classifier and evaluation
+#SystemB_classifier(resnet_features, labels) # placeholder for system B classifier and evaluation
 
 '''
 System A results/discussion:
