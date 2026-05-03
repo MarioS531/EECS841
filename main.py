@@ -1,7 +1,10 @@
 import os
 import cv2 # sudo apt install python3-opencv for reading images
 import numpy as np
+import torch # sudo apt install python3-torch for deep learning features (system B)
+import torchvision.models as models
 from skimage.feature import hog # run sudo apt install python3-skimage to install scikit-image library for HoG feature extraction
+from PIL import Image
 
 # sudo apt install python3-sklearn
 from sklearn.svm import SVC # import the SVM classifier
@@ -113,12 +116,37 @@ def SystemA_classifier(hog_features, labels):
     print("Training F1-Score:", train_f1)
     print("Testing F1-Score:", test_f1)
 
-dataset_path = "dataset"
+def extract_ResNet_features(images):
+    weights = models.ResNet18_Weights.DEFAULT
+    model = models.resnet18(weights=weights)
+    model.fc = torch.nn.Identity() # remove final classification layer to get features
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    model.eval() # set to evaluation mode
+
+    preprocess = weights.transforms() # get preprocessing transforms for ResNet
+    features = []
+    print("Extracting ResNet features...")
+    with torch.no_grad():
+        for idx, img in enumerate(images):
+            img_pil = Image.fromarray(img).convert("RGB") # convert to PIL image for preprocessing
+            input_tensor = preprocess(img_pil).unsqueeze(0).to(device) # preprocess and add batch dimension
+            feature = model(input_tensor).cpu().numpy().flatten() # extract features and flatten
+            features.append(feature)
+            if (idx+1) % 500 == 0:
+                print(f"Processed {idx+1}/{len(images)} images")
+    return np.array(features)
+
+dataset_path = "Happy_Angry_Dataset_3K/dataset"
 images, labels = load_dataset(dataset_path)
 hog_features = extract_hog_features(images)
 print("HoG feature shape:", hog_features.shape)
 
 SystemA_classifier(hog_features, labels)
+
+resnet_features = extract_ResNet_features(images) # placeholder for system B feature extraction
+print("ResNet feature shape:", resnet_features.shape)
+#SystemB_classifier(deep_model_features, labels) # placeholder for system B classifier and evaluation
 
 '''
 System A results/discussion:
