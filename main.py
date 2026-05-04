@@ -137,6 +137,46 @@ def extract_ResNet_features(images):
                 print(f"Processed {idx+1}/{len(images)} images")
     return np.array(features)
 
+def SystemB_classifier(features, labels):
+    # train and evaluate SVM as system A
+    # train (80%), test (20%) split
+    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
+
+    # define and train SVM model
+    model = SVC()
+    model.fit(X_train, y_train)
+
+    y_train_pred = model.predict(X_train)
+    y_pred = model.predict(X_test)
+
+    # evaluation metrics: accuracy, precision, f1-score for both training and testing sets (baseline)
+    train_accuracy, train_prec, train_f1 = evaluation(y_train, y_train_pred)
+    test_accuracy, test_prec, test_f1 = evaluation(y_test, y_pred)
+    print("System B baseline evaluation: ")
+    print("Training Accuracy:", train_accuracy)
+    print("Testing Accuracy:", test_accuracy)
+    print("Training Precision:", train_prec)
+    print("Testing Precision:", test_prec)
+    print("Training F1-Score:", train_f1)
+    print("Testing F1-Score:", test_f1)
+
+    # train new best model
+    model = tune_params(X_train, y_train)
+
+    y_train_pred = model.predict(X_train)
+    y_pred = model.predict(X_test)
+
+    # evaluation metrics: accuracy, precision, f1-score for both training and testing sets (tuned)
+    train_accuracy, train_prec, train_f1 = evaluation(y_train, y_train_pred)
+    test_accuracy, test_prec, test_f1 = evaluation(y_test, y_pred)
+    print("System B tuned evaluation: ")
+    print("Training Accuracy:", train_accuracy)
+    print("Testing Accuracy:", test_accuracy)
+    print("Training Precision:", train_prec)
+    print("Testing Precision:", test_prec)
+    print("Training F1-Score:", train_f1)
+    print("Testing F1-Score:", test_f1)
+
 dataset_path = "Happy_Angry_Dataset_3K/dataset"
 images, labels = load_dataset(dataset_path)
 hog_features = extract_hog_features(images)
@@ -144,9 +184,12 @@ print("HoG feature shape:", hog_features.shape)
 
 SystemA_classifier(hog_features, labels)
 
-resnet_features = extract_ResNet_features(images) # placeholder for system B feature extraction
+print()
+
+resnet_features = extract_ResNet_features(images)
 print("ResNet feature shape:", resnet_features.shape)
-#SystemB_classifier(resnet_features, labels) # placeholder for system B classifier and evaluation
+
+SystemB_classifier(resnet_features, labels)
 
 '''
 System A results/discussion:
