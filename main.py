@@ -215,4 +215,27 @@ Tuning did not improve performance. Performance is already high, which may show 
 HoG does a good job at separating classes already so tuning the classifier is not needed.
 
 The small gap between training and testing accuracy indicates mild overfitting.
+
+System B results/discussion
+ResNet feature shape: (3000, 512)
+System B baseline evaluation: 
+Training Accuracy: 0.8625
+Testing Accuracy: 0.7766666666666666
+Training Precision: 0.8603868797308662
+Testing Precision: 0.8033898305084746
+Training F1-Score: 0.8611111111111112
+Testing F1-Score: 0.7796052631578947
+Best parameters: {'C': 10, 'gamma': 0.01, 'kernel': 'rbf'}
+Best accuracy: 0.81125
+System B tuned evaluation: 
+Training Accuracy: 1.0
+Testing Accuracy: 0.7783333333333333
+Training Precision: 1.0
+Testing Precision: 0.7884615384615384
+Training F1-Score: 1.0
+Testing F1-Score: 0.7872
+
+Tuning moved training accuracy to 100% and dropped testing accuracy to 77%. The tuned
+model is likely overfit. This is reflected in the F1-score. ResNet-18 Performed worse
+than HoG at feature extraction and resulted in worse classification accuracy.
 '''
