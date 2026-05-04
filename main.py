@@ -238,4 +238,42 @@ Testing F1-Score: 0.7872
 Tuning moved training accuracy to 100% and dropped testing accuracy to 77%. The tuned
 model is likely overfit. This is reflected in the F1-score. ResNet-18 Performed worse
 than HoG at feature extraction and resulted in worse classification accuracy.
+
+System B results (AlexNet)
+AlexNet feature shape: (3000, 1000)
+System B baseline evaluation:
+Training Accuracy: 0.7679166666666667
+Testing Accuracy: 0.7133333333333334
+Training Precision: 0.7544956997654417
+Testing Precision: 0.7013422818791947
+Training F1-Score: 0.7760353839967833
+Testing F1-Score: 0.7084745762711865
+Best parameters: {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}
+Best accuracy: 0.7666666666666667
+System B tuned evaluation:
+Training Accuracy: 0.8570833333333333
+Testing Accuracy: 0.7466666666666667
+Training Precision: 0.8462770216172938
+Testing Precision: 0.7554744525547445
+Training F1-Score: 0.8603988603988604
+Testing F1-Score: 0.7314487632508834
+
+System B results (VGG)
+VGG feature shape: (3000, 1000)
+System B baseline evaluation:
+Training Accuracy: 0.74
+Testing Accuracy: 0.72
+Training Precision: 0.7430795847750865
+Testing Precision: 0.7339743589743589
+Training F1-Score: 0.7335610589239966
+Testing F1-Score: 0.731629392971246
+Best parameters: {'C': 100, 'gamma': 'scale', 'kernel': 'rbf'}
+Best accuracy: 0.7445833333333333
+System B tuned evaluation:
+Training Accuracy: 0.9504166666666667
+Testing Accuracy: 0.7616666666666667
+Training Precision: 0.949452401010952
+Testing Precision: 0.7918088737201365
+Training F1-Score: 0.9498525073746312
+Testing F1-Score: 0.7644151565074135
 '''
